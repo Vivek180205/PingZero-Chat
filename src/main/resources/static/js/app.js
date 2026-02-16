@@ -49,7 +49,17 @@ function connectWebSocket() {
                 showMessage(JSON.parse(message.body));
             });
 
+            stompClient.subscribe('/user/queue/history', function (message) {
+
+                const history = JSON.parse(message.body);
+                history.forEach(msg => showMessage(msg));
+            });
+
+            stompClient.publish({
+                destination: "/app/history"
+            });
         }
+
     });
 
     stompClient.activate();
