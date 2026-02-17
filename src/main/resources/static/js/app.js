@@ -45,21 +45,38 @@ function connectWebSocket() {
         },
         onConnect: function () {
 
+            // MESSAGE SUBSCRIBE
             stompClient.subscribe('/topic/messages', function (message) {
                 showMessage(JSON.parse(message.body));
             });
 
+            // HISTORY
             stompClient.subscribe('/user/queue/history', function (message) {
-
                 const history = JSON.parse(message.body);
                 history.forEach(msg => showMessage(msg));
             });
+
+            // TYPING SUBSCRIBE
+            stompClient.subscribe('/topic/typing', function (message) {
+
+                const data = JSON.parse(message.body);
+
+                if (data.user === currentUser) return;
+
+                const indicator = document.getElementById("typingIndicator");
+
+                if (data.status === "START") {
+                    indicator.innerText = data.user + " is typing...";
+                } else {
+                    indicator.innerText = "";
+                }
+            });
+
 
             stompClient.publish({
                 destination: "/app/history"
             });
         }
-
     });
 
     stompClient.activate();
@@ -105,7 +122,6 @@ function showMessage(message) {
     }
 
     chat.appendChild(msgDiv);
-
     chat.scrollTop = chat.scrollHeight;
 }
 
@@ -115,3 +131,35 @@ document.addEventListener("keydown", function (event) {
         sendMessage();
     }
 });
+
+/* TYPING EVENT SEND */
+let typingTimer = null;
+let typing = false;
+
+const inputField = document.getElementById("message");
+
+inputField.addEventListener("input", function () {
+
+    if (!stompClient || !stompClient.connected) return;
+
+    if (!typing) {
+        typing = true;
+
+        stompClient.publish({
+            destination: "/app/chat.typing",
+            body: JSON.stringify({ status: "START" })
+        });
+    }
+
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(() => {
+        typing = false;
+
+        stompClient.publish({
+            destination: "/app/chat.typing",
+            body: JSON.stringify({ status: "STOP" })
+        });
+    }, 1500);
+});
+
