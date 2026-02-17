@@ -21,5 +21,5 @@ A real-time chat application built using (tech stack).
 2. Configure application.properties
 3. Run DemoApplication
 
-##ScreenShot of Webpage
+## ScreenShot of Webpage
 <img width="1121" height="989" alt="image" src="https://github.com/user-attachments/assets/62562c23-0d81-4b77-bb19-3c9b5ef8e6fb" />
