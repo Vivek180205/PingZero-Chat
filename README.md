@@ -6,7 +6,7 @@ A real-time chat application built using (tech stack).
 - Java
 - Spring Boot
 - WebSocket / REST
-- PostgreSQL
+- MongoDB
 - Redis (if used)
 - JWT Authentication
 
