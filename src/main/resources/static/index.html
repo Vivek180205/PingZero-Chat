@@ -12,12 +12,48 @@
 <body>
 
 <div id="app">
-
     <div id="loginSection">
-        <h2>Login</h2>
-        <input type="text" id="loginUsername" placeholder="Username">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button onclick="login()">Login</button>
+        <div class="login-container">
+            <h2>Login</h2>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter username">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password">
+            </div>
+
+            <button onclick="login()" class="login-btn">SIGN IN</button>
+
+            <div class="extra-links">
+                <p>Don't have an account? <span onclick="showSignUp()">Sign Up</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="signUpSection" style="display:none;">
+        <div class="login-container">
+            <h2>Sign Up</h2>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="signupUsername" placeholder="Enter username">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signupPassword" placeholder="Enter password">
+            </div>
+
+            <button onclick="signUp()" class="login-btn">SIGN UP</button>
+
+            <div class="extra-links">
+                <p>Already have an Account ? <span onclick="showLogin()">Sign In</span></p>
+            </div>
+        </div>
     </div>
 
     <div id="chatSection" style="display:none;">

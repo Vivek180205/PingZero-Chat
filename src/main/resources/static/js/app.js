@@ -2,11 +2,28 @@ let stompClient = null;
 let token = null;
 let currentUser = null;
 
+
+/* Showing Sign Up */
+function showSignUp(){
+    document.getElementById("signUpSection").style.display = "flex";
+    document.getElementById("loginSection").style.display = "none";
+}
+/* Showing Login */
+function showLogin(){
+    document.getElementById("loginSection").style.display = "flex";
+    document.getElementById("signUpSection").style.display = "none";
+}
+
 /* LOGIN */
 function login() {
 
-    const username = document.getElementById("loginUsername").value;
-    const password = document.getElementById("loginPassword").value;
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+
+    if (!username || !password) {
+        alert("Enter username and password");
+        return;
+    }
 
     fetch("/auth/login", {
         method: "POST",
@@ -15,7 +32,12 @@ function login() {
         },
         body: JSON.stringify({ username, password })
     })
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Invalid credentials");
+            }
+            return response.text();
+        })
         .then(data => {
 
             token = data;
@@ -23,6 +45,7 @@ function login() {
             currentUser = username.toLowerCase();
 
             document.getElementById("loginSection").style.display = "none";
+            document.getElementById("signUpSection").style.display = "none";
             document.getElementById("chatSection").style.display = "block";
 
             connectWebSocket();
@@ -31,6 +54,31 @@ function login() {
             alert("Login failed");
             console.error(error);
         });
+}
+
+/* SIGN UP */
+function signUp(){
+
+    const username = document.getElementById("signupUsername").value;
+    const password = document.getElementById("signupPassword").value;
+
+    fetch("/auth/register",{
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
+    }).then(response => {
+        if(response.ok){
+            alert("Signup Successful. Please login.");
+            showLogin();
+        }
+        else {
+            alert("Signup failed!");
+            }
+        })
+        .catch( error =>
+        console.error("ERROR:"+ error));
 }
 
 /* CONNECT WEBSOCKET */
@@ -133,33 +181,39 @@ document.addEventListener("keydown", function (event) {
 });
 
 /* TYPING EVENT SEND */
-let typingTimer = null;
-let typing = false;
+document.addEventListener("DOMContentLoaded", function () {
 
-const inputField = document.getElementById("message");
+    const inputField = document.getElementById("message");
 
-inputField.addEventListener("input", function () {
+    if (!inputField) return;
 
-    if (!stompClient || !stompClient.connected) return;
+    let typingTimer = null;
+    let typing = false;
 
-    if (!typing) {
-        typing = true;
+    inputField.addEventListener("input", function () {
 
-        stompClient.publish({
-            destination: "/app/chat.typing",
-            body: JSON.stringify({ status: "START" })
-        });
-    }
+        if (!stompClient || !stompClient.connected) return;
 
-    clearTimeout(typingTimer);
+        if (!typing) {
+            typing = true;
 
-    typingTimer = setTimeout(() => {
-        typing = false;
+            stompClient.publish({
+                destination: "/app/chat.typing",
+                body: JSON.stringify({ status: "START" })
+            });
+        }
 
-        stompClient.publish({
-            destination: "/app/chat.typing",
-            body: JSON.stringify({ status: "STOP" })
-        });
-    }, 1500);
+        clearTimeout(typingTimer);
+
+        typingTimer = setTimeout(() => {
+            typing = false;
+
+            stompClient.publish({
+                destination: "/app/chat.typing",
+                body: JSON.stringify({ status: "STOP" })
+            });
+        }, 1500);
+    });
+
 });
 
