@@ -4,8 +4,13 @@ import com.vivek.pingzero.dto.LoginRequest;
 import com.vivek.pingzero.security.JwtUtil;
 import com.vivek.pingzero.model.User;
 import com.vivek.pingzero.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
 
 @RestController
 @RequestMapping("/auth")
@@ -22,16 +27,17 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
+    public String register(@Valid @RequestBody LoginRequest request) {
 
-        String normalizedUsername = user.getUsername().toLowerCase();
+        String normalizedUsername = request.getUsername().toLowerCase();
 
         if (userRepository.findByUsername(normalizedUsername).isPresent()) {
             return "Username already exists";
         }
 
+        User user = new User();
         user.setUsername(normalizedUsername);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
 
@@ -40,7 +46,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest request) {
+    public String login(@Valid @RequestBody LoginRequest request) {
 
         String normalizedUsername = request.getUsername().toLowerCase();
 
@@ -54,5 +60,9 @@ public class AuthController {
         return jwtUtil.generateToken(user.getUsername());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidation(MethodArgumentNotValidException ex) {
+        return ResponseEntity.badRequest().body("Invalid input");
+    }
 
 }
